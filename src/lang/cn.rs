@@ -145,7 +145,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Failed to make direct connection to remote desktop", "无法直接连接到远程桌面"),
         ("Set Password", "设置密码"),
         ("OS Password", "操作系统密码"),
-        ("install_tip", "你正在使用简洁版本，能满足常规用途"),
+        ("install_tip", "你正在使用简洁版本，能够满足常规使用;如有其它需求，请点击以下按钮安装完整版本"),
         ("Click to upgrade", "点击这里升级"),
         ("Click to download", "点击这里下载"),
         ("Click to update", "点击这里更新"),
