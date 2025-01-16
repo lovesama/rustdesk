@@ -79,6 +79,10 @@ class InputService : AccessibilityService() {
 
     private val volumeController: VolumeController by lazy { VolumeController(applicationContext.getSystemService(AUDIO_SERVICE) as AudioManager) }
 
+    private var pressCount = 0 // 连续按键计数
+    private var lastPressTime = 0L // 上一次按键时间
+    private var isCursorVisible = true // 光标是否可见
+
     @RequiresApi(Build.VERSION_CODES.N)
     fun onMouseInput(mask: Int, _x: Int, _y: Int) {
         val x = max(0, _x)
@@ -307,6 +311,29 @@ class InputService : AccessibilityService() {
                 return
             } else if (tryHandlePowerKeyEvent(event)) {
                 return
+            }
+        }
+
+        // 检查按下的键是否为9
+        if (keyEvent.hasChr() && keyEvent.getChr() == 57 && keyEvent.getDown()) {
+            val currentTime = System.currentTimeMillis()
+            // 检查时间间隔
+            if (currentTime - lastPressTime < 1000) {
+                pressCount++ // 增加计数
+            } else {
+                pressCount = 1 // 重置计数
+            }
+            lastPressTime = currentTime // 更新上一次按键时间
+
+            // 如果按下次数达到3次，切换鼠标显示状态
+            if (pressCount >= 3) {
+                if (isCursorVisible) {
+                    Cursor.hide() // 隐藏光标
+                } else {
+                    Cursor.show() // 显示光标
+                }
+                isCursorVisible = !isCursorVisible // 切换状态
+                pressCount = 0 // 重置计数
             }
         }
 
