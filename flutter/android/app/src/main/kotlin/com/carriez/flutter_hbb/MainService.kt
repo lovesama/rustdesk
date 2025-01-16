@@ -79,7 +79,8 @@ class MainService : Service() {
                     InputService.ctx?.onTouchInput(mask, x, y)
                 }
                 1 -> { // mouse
-                    InputService.ctx?.onMouseInput(mask, x, y)
+                    //InputService.ctx?.onMouseInput(mask, x, y)
+                    InputService.ctx?.onTouchInput(mask, x, y)
                 }
                 else -> {
                 }
