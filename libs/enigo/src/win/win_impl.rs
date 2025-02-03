@@ -7,6 +7,7 @@ use winapi;
 use crate::win::keycodes::*;
 use crate::{Key, KeyboardControllable, MouseButton, MouseControllable};
 use std::mem::*;
+use windows::Win32::UI::WindowsAndMessaging::{GetCursorInfo, CURSORINFO, CURSOR_SHOWING};
 
 extern "system" {
     pub fn GetLastError() -> DWORD;
@@ -463,5 +464,21 @@ impl Enigo {
             unsafe { GetWindowThreadProcessId(GetForegroundWindow(), std::ptr::null_mut()) };
         unsafe { LAYOUT = GetKeyboardLayout(current_window_thread_id) };
         unsafe { VkKeyScanExW(chr as _, LAYOUT) as _ }
+    }
+
+    pub fn is_cursor_visible(&self) -> bool {
+        unsafe {
+            let mut cursor_info = CURSORINFO {
+                cbSize: std::mem::size_of::<CURSORINFO>() as u32,
+                flags: 0,
+                hCursor: None,
+                ptScreenPos: Default::default(),
+            };
+            
+            if GetCursorInfo(&mut cursor_info).as_bool() {
+                return (cursor_info.flags & CURSOR_SHOWING as u32) != 0;
+            }
+            true // 如果获取失败，默认认为光标可见
+        }
     }
 }
