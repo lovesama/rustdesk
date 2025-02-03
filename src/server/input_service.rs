@@ -1592,7 +1592,7 @@ fn simulate_win2win_hotkey(code: u32, down: bool) {
     allow_err!(rdev::simulate_code(None, Some(scan), down));
 }
 
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
+#[cfg(not(any(target_os = "windows", target_os = "linux")))]
 fn skip_led_sync_control_key(_key: &ControlKey) -> bool {
     false
 }
@@ -1856,64 +1856,4 @@ lazy_static::lazy_static! {
         (ControlKey::Insert, true),
         (ControlKey::Delete, true),
     ].iter().map(|(a, b)| (a.value(), b.clone())).collect();
-}
-
-pub struct InputService {
-    pub sp: ServiceTmpl<MouseCursorSub>,
-    game_mode: bool,
-    center_pos: (i32, i32),
-}
-
-impl InputService {
-    pub fn new() -> Self {
-        Self {
-            sp: ServiceTmpl::<MouseCursorSub>::new(NAME_CURSOR.to_owned(), true),
-            game_mode: false,
-            center_pos: (0, 0),
-        }
-    }
-
-    fn handle_mouse_move(&mut self, x: i32, y: i32) {
-        let enigo = self.get_enigo();
-        
-        // 检查鼠标光标是否可见
-        if !enigo.is_cursor_visible() && !self.game_mode {
-            // 进入游戏模式
-            self.game_mode = true;
-            
-            // 计算窗口中心位置
-            if let Some(window) = get_active_window() {
-                let (wx, wy, ww, wh) = window.get_rect();
-                self.center_pos = (wx + ww/2, wy + wh/2);
-                
-                // 将鼠标移动到中心
-                enigo.mouse_move_to(self.center_pos.0, self.center_pos.1);
-            }
-        }
-
-        if self.game_mode {
-            // 在游戏模式下，将鼠标移动转换为相对移动
-            let dx = x - self.center_pos.0;
-            let dy = y - self.center_pos.1;
-            
-            if dx != 0 || dy != 0 {
-                // 发送相对移动事件
-                enigo.mouse_move_relative(dx, dy);
-                // 重置鼠标位置到中心
-                enigo.mouse_move_to(self.center_pos.0, self.center_pos.1);
-            }
-        } else {
-            // 正常模式下的鼠标移动
-            enigo.mouse_move_to(x, y);
-        }
-    }
-    
-    fn check_game_mode_exit(&mut self) {
-        if self.game_mode {
-            let enigo = self.get_enigo();
-            if enigo.is_cursor_visible() {
-                self.game_mode = false;
-            }
-        }
-    }
 }
